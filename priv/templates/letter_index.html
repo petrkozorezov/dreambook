@@ -1,0 +1,22 @@
+<div id="letter_index">
+	<ul>
+		{% for i in index %}
+			<a href="#" class="letter_index_link" id="letter_{{i}}" class="letters">{{ i }}</a>
+		{% endfor %}
+	</ul>
+</div>
+
+<script>
+        $('.letter_index_link').click( function() {
+				$.ajax({
+					type: "POST",
+					url: "find_by_letter",
+					data: "letter=" + this.id,
+					success: function(html) {
+						$("#main").html(html);
+					}
+				});
+            return false;
+        });
+
+</script>

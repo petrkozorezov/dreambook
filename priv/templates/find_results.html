@@ -1,0 +1,28 @@
+{% include "find_form.html" %}
+
+{% include "letter_index.html" %}
+
+<div id="find_results_words">
+	<ul>
+		{% for result in results %}
+			<a href="#" id="word_{{ result }}" class="find_result_words_link" >{{ result }}</a><br/>
+		{% endfor %}
+	</ul>
+</div>
+
+<script>
+    $(document).ready( function() {
+        $('.find_result_words_link').click( function() {
+				$.ajax({
+					type: "POST",
+					url: "get_dictionaries",
+					data: "word=" + this.id,
+					success: function(html) {
+						$("#main").html(html);
+					}
+				});
+            return false;
+        });
+    });
+</script>
+

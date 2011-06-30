@@ -1,0 +1,22 @@
+<form id="find_form">  
+    <input id="find_phrase" type="text" value="Ведите ключевое слово">
+    <input type="submit" id="find_button" value="Найти">
+</form>
+
+<script>
+    $(document).ready( function() {
+        $('#find_form').submit( function() {
+        	if($("#find_phrase").val() != "") {
+				$.ajax({
+					type: "POST",
+					url: "find_by_phrase",
+					data: "phrase="+$("#find_phrase").val(),
+					success: function(html) {
+						$("#main").html(html);
+					}
+				});
+			}
+            return false;
+        });
+    });
+</script>

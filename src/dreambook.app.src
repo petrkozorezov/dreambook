@@ -1,0 +1,16 @@
+{application, dreambook,
+ [
+  {description, "Dreambook"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  inets,
+                  crypto,
+                  emysql,
+                  social_net_api
+                 ]},
+  {mod, { dreambook_app, []}},
+  {env, []}
+ ]}.

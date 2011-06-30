@@ -1,0 +1,79 @@
+/**
+ * "Yet Another Multicolumn Layout" - (X)HTML/CSS framework
+ * (en) central stylesheet
+ * (de) zentrales Stylesheet
+ *
+ * @creator       YAML Builder V1.2.1 (http://builder.yaml.de)
+ * @file          my_layout.css
+ * @-yaml-minver  3.3
+ * 
+ */
+
+/* import core styles | Basis-Stylesheets einbinden */
+@import url(../yaml/core/base.css);
+
+/* import screen layout | Screen-Layout einbinden */
+@import url(../yaml/navigation/nav_shinybuttons.css);
+
+/* import print layout | Druck-Layout einbinden */
+@import url(../yaml/print/print_draft.css);
+
+@font-face {
+	font-family: RosaMarena;
+	src: url("../fonts/RosaMarena.ttf");
+}
+
+
+/**
+ * "Yet Another Multicolumn Layout" - (X)HTML/CSS framework
+ * (en) stylesheet for screen layout
+ * (de) Stylesheet für das Bildschirm-Layout
+ *
+ * @creator       YAML Builder V1.2.1 (http://builder.yaml.de)
+ * @file          basemod.css
+ * @-yaml-minver  3.3
+ */
+
+@media screen, projection
+{
+  
+  body { padding: 0 0; overflow-y: scroll; }
+
+  .main_link { color: #ffffff; text-decoration: none; text-shadow: black 0px 1px 3px; }
+  .letter_index_link { color: #2d130a; text-decoration: none; padding-left:5px; font-size: 18pt; }
+  .find_result_words_link{ color: #2d130a; text-decoration: none; }
+  
+  .page {
+  	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+
+  	color: #420a0a;
+  	text-shadow: black 0px 0px 1px;
+  	background-image: url('../img/win1_back.png');
+  	/*background-repeat: no-repeat;*/
+  	width: 731px;
+  	height: 651px;
+  	font-family: RosaMarena;
+  }
+
+  #header { position:relative; padding: 0px 2em 1em 20px; color: #000; background: transparent;  }
+  #account { position:absolute; top:12px; left:400px; text-align:center; color: #410909; background: transparent; font-size: 27pt; line-height: 125%; }
+  #back { position:absolute; top:10px; left:10px; text-align:left; color: #aaa; background: transparent; }
+  #title { position:absolute; top:10px; left:10px; text-align:left; color: #aaa; background: transparent; }
+  #find_results_words{ text-align:left; }
+  #dictionaries{ position:relative; left:30px; top: 30px; text-align:left; }
+
+  #greeting{ position:relative; top:100px; left:0px; }
+
+  #main { position:absolute; top:150px; left:65px; margin: 10px 0; background: transparent; font-size: 20pt; width: 640px; line-height: 140%; text-align:center;}
+
+  #find_form { position:relative; top:0px; left:15px; text-shadow: black 0px 1px 3px; color: #fff; font-size: 40pt;}
+  #find_phrase { border:solid 0px #fff; width: 430px; font-size: inherit; font-family: inherit; color: inherit; background: url('') no-repeat 1px 1px; text-shadow: inherit; }
+  #find_button { position:relative; top:0px; left:0px; cursor:pointer; width: 130px; height: 70px; border: none; font-family: inherit; color: inherit; background: url('') no-repeat 1px 1px; font-size: inherit; text-shadow: inherit; }
+
+  #letter_index { position:relative; top:0px; left:-50px; font-size: 24pt; line-height: 100%; }
+}
+

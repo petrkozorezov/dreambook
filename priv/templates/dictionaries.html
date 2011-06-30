@@ -1,0 +1,28 @@
+<div id="dictionaries">
+	{{ word }}<br/>
+	{% for dictionary in dictionaries %}
+		Сонник {{ dictionary }}
+		<a href="#" id="dict_{{dictionary}}" class="dictionaries"><img src="img/closed.png"/></a>
+		<br/>
+	{% endfor %}
+</div>
+
+<script>
+	$(document).ready( function() {
+		$('#home').click( function() {
+			getMainWindow()
+			return false;
+		});
+        $('.dictionaries').click( function() {
+			$.ajax({
+				type: "POST",
+				url: "get_interpretation",
+				data: "word={{ word }};dictionary=" + this.id,
+				success: function(html) {
+					$("#main").html(html);
+				}
+			});
+            return false;
+        });
+    });
+</script>
