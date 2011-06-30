@@ -5,15 +5,15 @@
 -include("logger.hrl").
 -include_lib("emysql/include/emysql.hrl").
 
--export([start/0, start/1, stop/1, stop/2]).
+-export([start_link/1, start_link/2, stop/1, stop/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
 
 % -export([find_meaning/1, find_keywords/1, get_balance/1, set_balance/2]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-start()             -> start([]).
-start(Options)      -> gen_server:start( {local, ?MODULE}, ?MODULE, Options, [] ).
+start_link(Options)            -> start_link( {local, ?MODULE}, Options ).
+start_link(Name, Options)      -> gen_server:start_link( Name, ?MODULE, Options, [] ).
 stop(Pid)           -> stop(Pid, shutdown).
 stop(Pid, Reason)   -> gen_server:call(Pid, {shutdown, Reason}, infinity).
 
@@ -42,13 +42,6 @@ init(Options) ->
     Pass = proplists:get_value(pass, Options, "sonnik"),
     Name = proplists:get_value(name, Options, "sonnik"),
 
-    LoggerConfig = proplists:get_value(logconf, Options, "logger.conf"),
-    application:start(log4erl),
-    ok = log4erl:conf(LoggerConfig),
-    ok = log4erl:error_logger_handler(),
-
-    application:start(crypto),
-    application:start(emysql),
     ok = emysql:add_pool(database, 1, User, Pass, Host, Port, Name, utf8),
 
     {ok, nil}.

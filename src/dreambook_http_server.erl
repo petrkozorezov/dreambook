@@ -30,7 +30,7 @@ handle_http_request(Request) ->
             _              -> erlang:error({invalid_path, 404})
         end,
 
-        ?LOG_TRACE(": request from ~s: ~s", [dreambook_utils:peername(Request:get(socket)), Request:get(raw_path)]),
+        ?LOG_DEBUG(": request from ~s: ~s", [dreambook_utils:peername(Request:get(socket)), Request:get(raw_path)]),
 
         Options = Request:parse_qs(),
         UID = proplists:get_value("uid", Options),
@@ -52,10 +52,10 @@ handle_http_request(Request) ->
         _:{favicon, Code} ->
             Request:respond({Code, [], []}); %% Silently ignore favicon
         _:{Reason, Code} when is_integer(Code) ->
-            ?LOG_TRACE(": Error occured: ~p; responding by page ~B ", [Reason, Code]),
+            ?LOG_DEBUG(": Error occured: ~p; responding by page ~B ", [Reason, Code]),
             Request:respond({Code, [], []});
         Cat:Err ->
-            ?LOG_TRACE(": Error ~p:~p occured: responding by page ~B ", [Cat, Err, 500]),
+            ?LOG_DEBUG(": Error ~p:~p occured: responding by page ~B ", [Cat, Err, 500]),
             Request:respond({500,  [], []})
     end.
 

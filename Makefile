@@ -1,7 +1,14 @@
 all: compile
 
-compile: 
-	erl -pa "./ebin" -make
+compile:
+	rebar compile
 
 clean:
-	rm ebin/*.beam -rf
+	rebar clean
+
+release:
+	rebar generate
+
+config:
+	cp default.config.example default.config
+
