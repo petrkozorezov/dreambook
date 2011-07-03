@@ -1,4 +1,31 @@
-<br/>
-Word: {{ word }}<br/>
-Dictionary: {{ dictionary }}<br/>
-Interpretation: {{ interpretation }}<br/>
+<div id="interpretation">
+	<br/>
+	{{ dictionary }}<br/>
+	{{ word }}<br/>
+
+	<div id="Scrollbar-Container">
+		<img src="img/up.png" class="Scrollbar-Up" />
+		<img src="img/down.png" class="Scrollbar-Down" />
+		<div class="Scrollbar-Track">
+			<img src="img/scroll2.png" class="Scrollbar-Handle" /> 
+		</div>
+	</div>
+
+	<div id="Scroller-1">
+		<div class="Scroller-Container"> 
+			{{ interpretation }}
+		</div>
+	</div>
+</div>
+
+<script>
+	var scroller  = null;
+	var scrollbar = null;
+
+	$(document).ready( function() {
+    	//scroller  = new jsScroller($('#Scroller-1'), 400, 200);
+    	//scrollbar = new jsScrollbar($('#Scrollbar-Container'), scroller, false);
+		scroller  = new jsScroller(document.getElementById("Scroller-1"), 600, 280);
+		scrollbar = new jsScrollbar (document.getElementById("Scrollbar-Container"), scroller, false);
+    });
+</script>

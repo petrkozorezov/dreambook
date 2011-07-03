@@ -1,4 +1,218 @@
+<!-- ---------------------------------------------------------------------------------------------------- -->
+<!-- #dialog is the id of a DIV defined in the code below -->
+<style>
+	#mask {
+	  top: 0px;
+	  left: 0px;
+	  position:absolute;
+	  z-index:9000;
+	  display:none;
+	  //background-color: #000
+	}
+
+	#boxes .window {
+	  position:absolute;
+	  width:545px;
+	  height:309px;
+	  display:none;
+	  z-index:9999;
+	  background-image: url('img/buy_dreams.png');
+	  font-size: 55px;
+	}
+	
+	#boxes .window .close {
+		position: absolute;
+		top: 15px;
+		right: 35px;
+	}
+
+	#boxes .window #dream_counter {
+		position: absolute;
+		bottom: 50px;
+		left: 20px;
+		width: 100px;
+		height: 100px;
+	}
+	
+	#boxes .window #dream_counter #up {
+		position: absolute;
+		top: 0px;
+		right: -50px;
+	}
+
+	#boxes .window #dream_counter #down {
+		position: absolute;
+		bottom: 0px;
+		right: -50px;
+	}
+	#boxes .window #dream_counter #text {
+		position: absolute;
+		top: 35px;
+		right: 5px;
+	}
+
+	#boxes .window #pay_button {
+		position: absolute;
+		bottom: 80px;
+		right: 100px;
+	}
+</style>
+
+<div id="boxes">
+    <div id="dialog" class="window">
+        <!-- close button is defined as close class -->
+        <a href="#" class="close"><img src="img/cross.png"></a>
+        
+        <div id="dream_counter">
+        	<a id="text"></a>
+        	<a href="#" id="up"><img src="img/up.png"></a>
+        	<a href="#" id="down"><img src="img/down.png"></a>
+        </div>
+        
+        <div id="pay_button">
+        	<a href="#" class="main_link">Купить!</a>
+        </div>
+    </div>
+    
+    <div id="mask"></div>
+</div>
+
 На Вашем счету<br/>
-{{ value }}<br/>
-<a href="#" class="main_link" id="test1">Пополнить</a>
-<a href="#" class="main_link" id="test2">Пригласить</a>
+<a id="account_value"></a>
+{{ account_postfix }}<br/>
+<a href="#dialog" name="modal" class="main_link" id="pay">Пополнить</a>
+<a href="#" class="main_link" id="invite">Пригласить</a>
+
+<script type="text/javascript">
+	GetDreamCounter = function() {
+		return dream_counter;
+	}
+
+	function DreamCounter(value, external_ref) {
+		if(value == null) {
+			value = 0;
+		} 
+		this.external_ref = external_ref;
+		this.counter = value;
+		this.Redraw();
+	}
+
+	DreamCounter.prototype.Increase = function(count) {
+		this.Set(this.Get() + count);
+	}
+
+	DreamCounter.prototype.Decrease = function(count) {
+		this.Set(this.Get() - count);
+	}
+	
+	DreamCounter.prototype.Set = function(val) {
+		this.counter = val;
+		this.Redraw();
+	}
+	
+	DreamCounter.prototype.Get = function() {
+		return this.counter;
+	}
+	
+	DreamCounter.prototype.Redraw = function() {
+		console.log("Redraw", this.counter);
+		$(this.external_ref).text(this.counter);
+	}
+
+	
+	$(document).ready( function() {
+		// start long polling
+	    //WaitAccountCahnges();
+
+		$('#invite').click( function() {
+			SocialInvite();
+		});
+
+		//select all the a tag with name equal to modal
+	    $('a[name=modal]').click(function(e) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+	        //Get the A tag
+	        var id = $(this).attr('href');
+
+	        //Get the screen height and width
+	        var maskHeight = $(document).height();
+	        var maskWidth = $(window).width();
+
+	        //Set height and width to mask to fill up the whole screen
+	        $('#mask').css({'width':maskWidth,'height':maskHeight});
+
+	        //transition effect     
+	        $('#mask').fadeIn(1000);    
+	        $('#mask').fadeTo("slow",0.8);  
+	     
+	        //Set the popup window to center
+	        $(id).css('top',  150);
+	        $(id).css('left', -320);
+	
+	        //transition effect
+	        $(id).fadeIn(100); 
+	    });
+
+	    //if close button is clicked
+	    $('.window .close').click(function (e) {
+	        //Cancel the link behavior
+	        e.preventDefault();
+	        $('#mask, .window').hide();
+	    });
+
+	    //if mask is clicked
+	    $('#mask').click(function () {
+	        $(this).hide();
+	        $('.window').hide();
+	    });
+
+
+	    dream_counter = new DreamCounter({{ account_value }}, '#account_value');
+	    buy_dream_counter = new DreamCounter(1, '.window #dream_counter #text');
+
+	    // pay
+	    $('#pay_button').click(function () {
+	    	SocialPay(buy_dream_counter.Get(), "а ты купи слона");
+	        $('#mask, .window').hide();
+	    });
+
+	    $('.window #dream_counter #up').click(function () {
+	    	buy_dream_counter.Increase(1)
+	    });
+	    
+	    // down
+	    $('.window #dream_counter #down').click(function () {
+	    	if(buy_dream_counter.Get() > 1) {
+	    		buy_dream_counter.Decrease(1)
+	    	}
+	    });
+	});
+
+	/*
+	WaitAccountCahnges = function() {
+	console.log("starting long poll");
+		 $.ajax({
+	        type: "GET",
+	        url: "get_account_change",
+	
+	        async: true,
+	        cache: false,
+	        timeout: 5000, // Timeout in ms 
+	
+	        success: function(data){ // called when request to barge.php completes
+	            console.log("new", data); // Add response to a .msg div (with the "new" class)
+	            WaitAccountCahnges();
+	        },
+	        error: function(XMLHttpRequest, textStatus, errorThrown) {
+	        	if(textStatus == "timeout") {
+	        		WaitAccountCahnges();
+	        	}
+	            console.log("error", textStatus + " (" + errorThrown + ")");
+	            //WaitAccountCahnges();
+	        },
+	    });
+	};
+	*/
+
+</script>

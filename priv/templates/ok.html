@@ -1,1 +1,11 @@
 <script type="text/javascript" src="http://api.odnoklassniki.ru/js/fapi.js"></script>
+<script type="text/javascript" src="js/ok.js"></script>
+
+<script>
+	$(document).ready( function() {
+		SocialInit(
+			'{{ api_server }}',
+			'{{ apiconnection }}'
+		)
+	});
+</script>
