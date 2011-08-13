@@ -29,6 +29,8 @@ SocialInvite = function() {
 
 SocialPay = function(text, val, cb) {
 	console.log("pay");
-	//FAPI.UI.showPayment('', 'dfsadfdsf', 'qCoins', '0', "",'[]','ok', 'true');
-	cb();
+	FAPI.UI.showPayment('Product name', text, val);
+	if(cb) {
+		cb();
+	}
 }
