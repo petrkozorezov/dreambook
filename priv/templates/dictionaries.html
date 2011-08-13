@@ -1,5 +1,4 @@
 
-
 <div id="dictionaries">
 	{{ word }}<br/>
 
@@ -12,10 +11,10 @@
 	</div>
 
 	<div id="Scroller-1">
-		<div class="Scroller-Container"> 
+		<div class="Scroller-Container">
 			{% for dictionary in dictionaries %}
-				Сонник {{ dictionary }}
-				<a href="#" id="dict_{{dictionary}}" class="dictionaries"><img src="img/closed.png"/></a>
+				{{ dictionary }}
+				<a href="#" id="dict_{{dictionary}}" class="dictionaries">{% if not paid_flag %}<img src="img/closed.png"/>{% else %}->{% endif %}</a>
 				<br/>
 			{% endfor %}
 		</div>
@@ -39,11 +38,15 @@
 				url: "get_interpretation",
 				data: "word={{ word }};dictionary=" + this.id,
 				success: function(html) {
+	                {% if not paid_flag %}
 					GetDreamCounter().Decrease(1);
+                    {% endif %}
 					$("#main").html(html);
 				}
 			});
             return false;
         });
+
+
     });
 </script>

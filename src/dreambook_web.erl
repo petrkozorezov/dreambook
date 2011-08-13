@@ -14,7 +14,7 @@
 					   ]).
 
 -define(LETTER_INDEX, [
-					   "А", "Б", "В", "Г", "Д", "E", "Ё", "Ж", "З", "И",
+					   "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И",
 					   "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У",
 					   "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
 					  ]).
@@ -78,9 +78,9 @@ loop(Req, WWWPath, TemplatesPath) ->
 
 get_page(Path, Req, DocRoot) ->
 	try
-		{ok, Uid} = auth(Req),
-		io:format("[~p] Get: ~p~n", [Uid, Req:get(raw_path)]),
-		{ok, Cont} = render_page(Path, Req),
+		{ok, UID} = auth(Req),
+		io:format("[~p] Get: ~p~n", [UID, Req:get(raw_path)]),
+		{ok, Cont} = render_page(Path, Req, UID),
 		Req:respond({200, [{"Content-type", "text/html; charset=utf-8"}], [ Cont ]})
 	catch
 		error:function_clause ->
@@ -107,12 +107,12 @@ get_page(Path, Req, DocRoot) ->
 %% sig=b9f3d4d2310820a4797fa9330a90539d
 %% session_secret_key=d41d8cd98f00b204e9800998ecf8427e
 
-render_page("", Req) ->
-	render_page("index.html", Req);
-render_page("iframe.html", Req) ->
-	render_page("index.html", Req);
-render_page("index.html", Req) ->
-	Account = get_account(),
+render_page("", Req, UID) ->
+	render_page("index.html", Req, UID);
+render_page("iframe.html", Req, UID) ->
+	render_page("index.html", Req, UID);
+render_page("index.html", Req, UID) ->
+	Account = get_account(UID),
 	CommonParams = [
 					{account_value, Account},
 					{account_postfix, get_correct_word_form(Account, {"сон", "сна", "снов"})}
@@ -124,44 +124,45 @@ render_page("index.html", Req) ->
 					 []
 			 end,
 	base_tpl:render(CommonParams ++ Params);
-render_page("get_main_window", _) ->
+render_page("get_main_window", _, _UID) ->
 	main_tpl:render([
 					 {index, ?LETTER_INDEX}
 					]);
-render_page("find_by_phrase", Req) ->
+render_page("find_by_phrase", Req, UID) ->
 	Data = Req:parse_post(),
 	Phrase = proplists:get_value("phrase", Data),
-	Results = find_by_phrase(Phrase),
+	Results = find_by_phrase(UID, Phrase),
 	io:format("~p ~p ~n", [Phrase, Results]),
 	find_results_tpl:render([
 							 {results, Results},
 							 {index, ?LETTER_INDEX}
 							]);
-render_page("find_by_letter", Req) ->
+render_page("find_by_letter", Req, UID) ->
 	Data = Req:parse_post(),
 	"letter_" ++ Letter = proplists:get_value("letter", Data),
-	Results = find_by_letter(Letter),
+	Results = find_by_letter(UID, Letter),
 	find_results_tpl:render([
 							 {results, Results},
 							 {index, ?LETTER_INDEX}
 							]);
-render_page("get_interpretation", Req) ->
+render_page("get_interpretation", Req, UID) ->
 	Data = Req:parse_post(),
 	Word = proplists:get_value("word", Data),
 	"dict_" ++ Dictionary = proplists:get_value("dictionary", Data),
-	Interpretation = find_interpretation(Dictionary, Word),
+	Interpretation = find_interpretation(UID, Dictionary, Word),
 	interpretation_tpl:render([
 							   {word, Word},
 							   {dictionary, Dictionary},
 							   {interpretation, Interpretation}
 							  ]);
-render_page("get_dictionaries", Req) ->
+render_page("get_dictionaries", Req, UID) ->
 	Data = Req:parse_post(),
 	"word_" ++ Word = proplists:get_value("word", Data),
-	Dictionaries = find_dictionaries(Word),
+	Dictionaries = find_dictionaries(UID, Word),
 	dictionaries_tpl:render([
 							 {word, Word},
-							 {dictionaries, Dictionaries}
+							 {dictionaries, Dictionaries},
+							 {paid_flag, is_in_history(UID, Word)}
 							]).
 %% render_page("get_account_change", Req) ->
 %% 	%% long poll
@@ -205,43 +206,51 @@ is_fake() ->
 			false
 	end.
 
-find_by_phrase(Phrase) ->
-	find_by_phrase(Phrase, is_fake()).
-find_by_phrase(_Phrase, true) ->
+find_by_phrase(UID, Phrase) ->
+	find_by_phrase(UID, Phrase, is_fake()).
+find_by_phrase(_, _, true) ->
 	["word1", "word2"];
-find_by_phrase(_Phrase, _) ->
-	todo.
+find_by_phrase(UID, Phrase, _) ->
+	dreambook_server:find_keywords(UID, "%" ++ Phrase ++ "%").
 
-find_by_letter(L) ->
-	find_by_letter(L, is_fake()).
-find_by_letter(_L, true) ->
+find_by_letter(UID, L) ->
+	find_by_letter(UID, L, is_fake()).
+find_by_letter(_, _, true) ->
 	[
 	 "word3", "word4", "word4","word4","word4","word4","word4","word4","word4","word4","word4","word4",
 	 "word3", "word4", "word4","word4","word4","word4","word4","word4","word4","word4","word4","word4"
 	];
-find_by_letter(_L, _) ->
-    todo.
+find_by_letter(UID, L, _) ->
+	dreambook_server:find_keywords(UID, "" ++ L ++ "%").
 
-find_interpretation(Dictionary, Word) ->
-	find_interpretation(Dictionary, Word, is_fake()).
-find_interpretation(_Dictionary, _Word, true) ->
+
+find_interpretation(UID, Dictionary, Word) ->
+	find_interpretation(UID, Dictionary, Word, is_fake()).
+find_interpretation(_, _, _, true) ->
 	"test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation test interpretation ";
-find_interpretation(_Dictionary, _Word, false) ->
-	todo.
+find_interpretation(UID, Dictionary, Word, false) ->
+	dreambook_server:find_meaning(UID, Dictionary, Word).
 
-find_dictionaries(Word) ->
-	find_dictionaries(Word, is_fake()).
-find_dictionaries(_Word, true) ->
+find_dictionaries(UID, Word) ->
+	find_dictionaries(UID, Word, is_fake()).
+find_dictionaries(_, _, true) ->
 	["test dict1", "test dict2", "test dict1", "test dict2", "test dict1", "test dict2", "test dict1", "test dict2", "test dict1", "test dict2", "test dict1", "test dict2", "test dict1", "test dict2"];
-find_dictionaries(_Woed, _) ->
-	todo.
+find_dictionaries(UID, Word, _) ->
+	dreambook_server:find_books(UID, Word).
 
-get_account() ->
-	get_account(is_fake()).
-get_account(true) ->
+get_account(UID) ->
+	get_account(UID, is_fake()).
+get_account(_, true) ->
 	10;
-get_account(_) ->
-	todo.
+get_account(UID, _) ->
+	dreambook_server:get_balance(UID).
+
+is_in_history(UID, Word) ->
+	is_in_history(UID, Word, is_fake()).
+is_in_history(_, _, true) ->
+	false;
+is_in_history(UID, Word, _) ->
+	dreambook_server:is_in_history(UID, Word).
 
 
 auth(Req) ->

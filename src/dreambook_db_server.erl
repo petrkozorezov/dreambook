@@ -1,6 +1,5 @@
 -module(dreambook_db_server).
 -behavior(gen_server).
--compile(export_all).
 
 -include("logger.hrl").
 -include_lib("emysql/include/emysql.hrl").
@@ -8,7 +7,18 @@
 -export([start_link/1, start_link/2, stop/1, stop/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
 
-% -export([find_meaning/1, find_keywords/1, get_balance/1, set_balance/2]).
+-export([
+		 find_books/1,
+		 find_meaning/2,
+		 find_keywords/1,
+		 add_user/2,
+		 in_history/2,
+		 add_history/2,
+		 get_history/1,
+		 get_balance/1,
+		 add_balance/2,
+		 del_balance/2
+		 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -18,7 +28,7 @@ stop(Pid)           -> stop(Pid, shutdown).
 stop(Pid, Reason)   -> gen_server:call(Pid, {shutdown, Reason}, infinity).
 
 find_books(Keyword)          -> gen_server:call(?MODULE, {find_books, Keyword}).
-find_meaning(Keyword)        -> gen_server:call(?MODULE, {find_meaning, Keyword}).
+find_meaning(Keyword, Book)  -> gen_server:call(?MODULE, {find_meaning, Keyword, Book}).
 find_keywords(Keyword)       -> gen_server:call(?MODULE, {find_keywords, Keyword}).
 
 add_user(UserID, Balance)    -> gen_server:call(?MODULE, {add_user, UserID, Balance}).
@@ -37,10 +47,10 @@ init(Options) ->
     process_flag(trap_exit, true),
 
     Port = proplists:get_value(port, Options, 3306),
-    Host = proplists:get_value(host, Options, "localhost"),
-    User = proplists:get_value(user, Options, "sonnik"),
-    Pass = proplists:get_value(pass, Options, "sonnik"),
-    Name = proplists:get_value(name, Options, "sonnik"),
+    Host = proplists:get_value(host, Options),
+    User = proplists:get_value(user, Options),
+    Pass = proplists:get_value(pass, Options),
+    Name = proplists:get_value(name, Options),
 
     ok = emysql:add_pool(database, 1, User, Pass, Host, Port, Name, utf8),
 
@@ -57,13 +67,15 @@ handle_call({find_books, Keyword}, _, State) ->
         R when is_record(R, result_packet) -> {reply, lists:flatten(R#result_packet.rows), State}
     end;
 
-handle_call({find_meaning, Keyword}, _, State) ->
-    Key = emysql_util:quote(Keyword),
-    Query = "SELECT Book, Data FROM sonnik WHERE Keyword = ~s",
-    QueryBin = iolist_to_binary(io_lib:format(Query, [Key])),
+handle_call({find_meaning, Keyword, Book}, _, State) ->
+    Query = "SELECT Data FROM sonnik WHERE Keyword = ~s and Book = ~s",
+    QueryBin = iolist_to_binary(io_lib:format(Query, [emysql_util:quote(Key) || Key <- [Keyword, Book]])),
+
     case execute(QueryBin) of
         R when is_record(R, error_packet)  -> {reply, make_error(R), State};
-        R when is_record(R, result_packet) -> {reply, lists:map(fun([X,Y]) -> {X, Y} end, R#result_packet.rows), State}
+        R when is_record(R, result_packet) ->
+			[Result] = R#result_packet.rows,
+			{reply, Result, State}
     end;
 
 handle_call({find_keywords, Keyword}, _, State) ->
@@ -166,7 +178,7 @@ handle_call({shutdown, Reason}, _, State) ->
 
 handle_call(Msg, _, State) ->
     error_logger:info_msg("unexpected call received: ~p", [Msg]),
-%     ?LOG_ERROR(": unexpected call received: ~p", [Msg]),
+												%     ?LOG_ERROR(": unexpected call received: ~p", [Msg]),
     {noreply, State}.
 
 handle_cast(Msg, State) ->

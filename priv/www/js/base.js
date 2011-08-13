@@ -10,3 +10,12 @@ getMainWindow = function() {
 		}
 	});
 }
+
+checkConsole = function() {
+    if (!window.console) {
+        window.console = {
+            "log" : function() { }
+        }
+    }
+    console.log("init")
+}

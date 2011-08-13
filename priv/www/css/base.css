@@ -61,6 +61,7 @@
   	font-family: RosaMarena;
   }
 
+  /*font-family: Arial;*/
   #header { position:relative; padding: 0px 2em 1em 20px; color: #000; background: transparent;  }
   #account { position:absolute; top:12px; left:400px; text-align:center; color: #410909; background: transparent; font-size: 27pt; line-height: 125%; }
   #home { position:absolute; top:7px; left:20px; text-align:left; font-size: 23pt; }
@@ -68,9 +69,10 @@
   #find_results_words { position:relative; text-align:left; }
   #dictionaries { position:relative; left:30px; top: 30px; text-align:left; }
   #interpretation { text-align:left; }
+  #interpretation_text{ /*font-family: Arial; font-size: 10pt;*/ }
   #greeting { position:relative; top:100px; left:0px; }
 
-  #main { position:absolute; top:150px; left:65px; margin: 10px 0; background: transparent; font-size: 20pt; width: 640px; line-height: 140%; text-align:center;}
+  #main { position:absolute; top:150px; left:65px; margin: 10px 0; background: transparent; font-size: 20pt; width: 640px; line-height: 140%; text-align:center; }
 
   #find_form { position:relative; top:0px; left:15px; text-shadow: black 0px 1px 3px; color: #fff; font-size: 40pt;}
   #find_phrase { position:relative; border:solid 0px #fff; width: 430px; font-size: inherit; font-family: inherit; color: inherit; background: url('') no-repeat 1px 1px; text-shadow: inherit; }

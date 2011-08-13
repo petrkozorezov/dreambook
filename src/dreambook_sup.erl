@@ -29,7 +29,7 @@ init([]) ->
 	DB = proplists:get_value(db, Config),
 	DBServerName = dreambook_db_server,
     {ok, { {one_for_one, 5, 10}, [
-								  ?CHILD(dreambook_web, dreambook_web, [[ {db_server, DBServerName} | Web]])
-%%								  ?CHILD(DBServerName, dreambook_db_server, [DB])
+								  ?CHILD(dreambook_web, dreambook_web, [Web]),
+								  ?CHILD(DBServerName, dreambook_db_server, [DB])
 								 ]} }.
 
