@@ -17,7 +17,8 @@
 		 get_history/1,
 		 get_balance/1,
 		 add_balance/2,
-		 del_balance/2
+		 del_balance/2,
+         handle_payment/1
 		 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -41,6 +42,8 @@ get_balance(UserID)          -> gen_server:call(?MODULE, {get_balance, UserID}).
 add_balance(UserID, Delta)   -> gen_server:call(?MODULE, {add_balance, UserID, Delta}).
 del_balance(UserID, Delta)   -> gen_server:call(?MODULE, {del_balance, UserID, Delta}).
 
+handle_payment(PaymentData)  -> gen_server:call(?MODULE, {handle_payment, PaymentData}).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 init(Options) ->
@@ -54,7 +57,7 @@ init(Options) ->
 
     ok = emysql:add_pool(database, 1, User, Pass, Host, Port, Name, utf8),
 
-    {ok, nil}.
+    {ok, dict:new()}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -168,6 +171,17 @@ handle_call({del_balance, UserID, Delta}, _, State) when Delta > 0 ->
                 1 -> {reply, ok, State};
                 _ -> {reply, {error, invalid_request}, State}
             end
+    end;
+
+handle_call({handle_payment, Data={{TransactionID, UserID}, {ProductCode, _}, _}}, From, State) ->
+    case dict:find(TransactionID, State) of
+        error ->
+            ?LOG_INFO(": payment request received: ~p", [Data]),
+            NewState = dict:store(TransactionID, Data, State),
+            handle_call({add_balance, UserID, list_to_integer(ProductCode)}, From, NewState);
+        {ok, {TransactionID, Data}} ->
+            ?LOG_INFO(": duplicate payment request received: ~p", [Data]),
+            ok
     end;
 
 

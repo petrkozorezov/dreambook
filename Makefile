@@ -1,13 +1,16 @@
 all: compile
 
 compile:
-	rebar compile
+	./rebar compile
 
 clean:
-	rebar clean
+	./rebar clean
 
 release:
-	rebar generate
+	./rebar generate
+
+deps:
+	./rebar get-deps
 
 config:
 	cp default.config.example default.config
